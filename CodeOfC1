@@ -1,0 +1,49 @@
+#include<stdio.h>
+#include<math.h>
+void main()
+{
+	FILE *fp;
+  double C,Ch,Cp,Qp,u,H,h,B,My,j,x,y;
+	int k,i;
+	fp=fopen("G://mghC/2weiwentaimoxing.txt","w+");
+	printf("请输入：\n");
+	printf("河流来水污染物浓度Ch9(mg/l):\n");
+	scanf("%lf", &Ch);
+	printf("污染物排放浓度Cp(mg/l):\n");
+	scanf("%lf", &Cp);
+	printf("废水排放量Qp(m3/s):\n");
+  scanf("%lf", &Qp);
+	printf("河流流速u(m/s):\n");
+	scanf("%lf", &u);
+	printf("平均水深H(m):\n");
+	scanf("%lf", &H);
+	printf("河流宽度B(m):\n");
+	scanf("%lf", &B);
+	printf("河流比降j:\n");
+	scanf("%lf",&j);
+	printf("河流长度h(m):\n");
+	scanf("%lf", &h);
+  fprintf(fp,"河流来水污染物浓度Ch=%.3lfmg/l,\n污染物排放浓度Cp=%.3lfmg/l,\n废水排放量Qp=%.3lfm3/s,\n河流流速u=%.3lfm/s,\n平均水深H=%.3lfm,\n河流宽度B=%.3lfm,\n河流比降j=%.5lf,\n河流长度h=%.3lfm,\n",Ch,Cp,Qp,u,H,B,j,h);
+	if(B/H<=100)
+		{
+           My=(0.058*H+0.0065*B)*pow((9.81*H*j),0.5);
+		}
+		else
+		{
+           My=0.00025*H*(pow((9.81*H*j),0.5));
+		}
+	fprintf(fp,"横向混合系数My=%.3lf\n",My);
+  fprintf(fp,"笛卡尔坐标系x,笛卡尔坐标系y,C(x,y)\n");
+	for(i=1;i<=100;i++)
+		{
+			x=h*i/100;
+	  for(k=1;k<=100;k++)
+			{
+				y=B*k/100;
+				C=Ch+Cp*Qp/(H*(pow(3.1415926*My*x*u,0.5)))*(pow(2.718281828,(-u*y*y/(4*My*x)))+pow(2.718281828,-1*u*(pow(2*B-y,2))/(4*My*x)));
+                 printf("%.3lf,%.3lf,%.6lf\n",x,y,C);
+                 fprintf(fp,"%.3lf,%.3lf,%.6lf\n",x,y,C);
+			}
+		}
+  fclose(fp);
+}

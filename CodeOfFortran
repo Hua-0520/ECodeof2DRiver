@@ -1,0 +1,39 @@
+ !--河流二维稳态混合模式--
+ program exam2weiwentai
+ implicit none 
+ real C,Ch,Cp,Qp,u,H,S,B,My,j,x,y
+ integer  i,k
+  open(3,file='G:\mghFortran\2weiwentai.dat')
+ print*,'输入：河流来水污染物浓度Ch(mg/l)'
+ READ*,Ch
+  print*,'输入：污染物排放浓度Cp(mg/l)'
+ READ*,Cp
+  print*,'输入：废水排放量Qp(m3/s)'
+ READ*,Qp
+  print*,'输入：河流流速u(m/s)'
+ READ*,u
+  print*,'输入：平均水深H(m)'
+ READ*,H
+  print*,'输入：河流长度S(m)'
+ READ*,S
+  print*,'输入：河流宽度B(m)'
+ READ*,B
+  print*,'输入：河流比降j'
+ READ*,j
+ IF(B/H<=100) THEN
+    My=(0.058*H+0.0065*B)*((9.81*H*j)**0.5)
+ ELSE
+    My=0.00025*H*(9.81*H*j)**0.5
+ END IF
+ 
+ do i=1,100
+      x=S*i/100
+   do k=1,100
+       y=B*k/100
+        C=Ch+Cp*Qp/(H*(3.1415926*My*x*u)**0.5)*(exp(-u*y*y/(4*My*x))+&
+          exp((-u*(2*B-y)**2)/(4*My*x)))
+   write(3,100),x,y,C
+   100 format(F10.3,F10.3,F15.5)
+   end do
+  end do
+end

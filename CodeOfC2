@@ -1,0 +1,188 @@
+#include<stdio.h>
+#include<math.h>
+#include<string.h>
+#include<stdlib.h>
+#include<stdbool.h>
+
+/*
+* 作者：小马奔腾
+* 时间：2016年5月
+* 联系方式：maguohaull@163.com
+*/
+
+#define NUM      8         //需要直接输入参数个数
+#define num      4         //需要计算参数个数
+#define pi       3.14159
+#define e        2.71828
+#define g        9.81
+
+void input(double[], double[], char *[], char *[]);
+void computer(double[], double[], char *[], char *[]);
+bool getchoices(char *, char *);
+char * getword(char *);    //获取输入单词 剔除空格等
+void display(char, int);   //显示制定字符
+
+FILE *fp;
+
+
+/*****************************************main主体函数********************************************/
+void main(void)
+{
+	char cr[4];
+	double parameters[NUM];
+	char *parametersname[NUM] = { "河流来水污染物浓度Ch(mg/l)",
+		"污染物排放浓度Cp(mg/l)",
+		"废水排放量Qp(m3/s)",
+		"河流流速u(m/s)",
+		"平均水深H(m)",
+		"河流宽度B(m)",
+		"河流比降j",
+		"河流长度h(m)" };
+	double arguments[num];
+	char *argumentsname[num] = { "污染物浓度C(x,y)",
+		"横向混合系数My",
+		"笛卡尔坐标系x",
+		"笛卡尔坐标系y" };
+	input(parameters, arguments, parametersname, argumentsname);
+	computer(parameters, arguments, parametersname, argumentsname);
+
+	puts("********************计算完毕！********************\n"
+		"请输入end结束程序！\n");
+	while (getchar() == '\n')
+	{
+		continue;
+	}
+	while (getchoices("end", getword(cr)) == true)
+	{
+		printf("请正确输入end结束程序！\n");
+		continue;
+	}
+	printf("程序已正确关闭！\n");
+	fclose(fp);
+	return;
+}
+
+/************************************输入参数及计算基本参数***************************************/
+void input(double parameters[NUM], double arguments[num], char * parametersname[NUM], char * argumentsname[num])
+{
+	char filename[40];
+	int index;
+	char ch[4];
+
+	printf("请您输入数据输出文件名及文件格式：\n"
+		"例如：date.txt\n");
+Dateinput:
+	printf("______\b\b\b\b\b\b");
+	gets(filename);
+	printf("\n");
+	printf("<请注意：该文件将创建在代码目录下>\n");
+	if ((fp = fopen(filename, "w+")) == NULL || filename == '\0')
+	{
+		printf("文件打开出错！\n");
+		printf("请您再次输入数据输出文件名及文件格式：\n"
+			"例如：date.txt\n");
+		goto Dateinput;
+	}
+	do
+	{
+		printf("请您输入以下参数：\n");
+
+		for (index = 0; index < NUM; index++)
+		{
+			printf("%s:___\b\b\b", parametersname[index]);
+			scanf("%lf", parameters + index);
+			printf("\n");
+		}
+
+		fprintf(fp, "********************河流2维污染物扩散模型********************\n\n");
+		printf("参数输入完毕！请您检查参数是否正确！\n");
+
+		display('*', 25 + 20);
+
+		for (index = 0; index < NUM; index++)
+		{
+			printf("     %s:%8.3f\n", *(parametersname + index), parameters[index]);
+			fprintf(fp, "     %s:%8.3lf\n", *(parametersname + index), parameters[index]);
+		}
+		printf("确认请输入yes，程序将进行下一步计算！\n"
+			"否则请输入no，重新输入参数！\n");
+		while (getchar() == '\n')
+			continue;
+	} while (getchoices("yes", getword(ch)));
+
+	//计算参数
+	if (parameters[5] / parameters[4] < 100)
+		arguments[1] = (0.058*parameters[4] + 0.0065*parameters[5] * sqrt(g*(parameters[4]) * parameters[6]));
+	else
+		arguments[1] = 0.00025*parameters[4] * sqrt(g*parameters[4] * parameters[6]);
+	printf("     %s=%8.3lf\n", argumentsname[1], arguments[1]);
+	fprintf(fp, "     %s=%8.3lf\n", argumentsname[1], arguments[1]);
+	display('*', 25 + 20);
+	fprintf(fp, "%s  %s  %s\n", argumentsname[2], argumentsname[3], argumentsname[0]);
+	return;
+
+}
+/********************************************计算及输出函数***********************************************/
+void computer(double parameters[NUM], double arguments[num], char * parametersname[NUM], char * argumentsname[num])
+{
+	int k, i;
+	int count = 0;
+
+	for (i = 1; i <= 100; i++)
+	{
+		arguments[2] = parameters[4] * parameters[6] / 100;
+		for (k = 1; k <= 100; k++)
+		{
+			arguments[3] = parameters[5] * k / 100;
+			arguments[0] = parameters[0] + parameters[2] * parameters[3] / (parameters[4] * sqrt(pi*arguments[1] * arguments[2] * parameters[3]))*(pow(e, (-parameters[3] * arguments[3] * arguments[3] / (4 * arguments[1] * arguments[2]))) + pow(e, -1 * parameters[3] * (pow(2 * parameters[5] - arguments[3], 2)) / (4 * arguments[1] * arguments[2])));
+
+			printf("%12.3lf %12.3lf %12.5lf\n", arguments[2], arguments[3], arguments[0]);
+			fprintf(fp, "%12.3lf %12.3lf %12.5lf\n", arguments[2], arguments[3], arguments[0]);
+			count++;
+
+		}
+	}
+	printf("本程序共计算%d次。\n", count);
+	fprintf(fp, "本程序共计算%d次。\n", count);
+	return;
+}
+/********************************************显示字符函数*********************************************/
+void display(char ch, int n)
+{
+	int m;
+	for (m = 0; m <= n; m++)
+	{
+		putchar(ch);
+		putc(ch, fp);
+	}
+	putchar('\n');
+	putc('\n', fp);
+	return;
+}
+/********************************************输入单词函数*********************************************/
+char * getword(char * str)
+{
+	int i;
+	int ch;
+
+	while ((ch = getchar()) != EOF && !isspace(ch))
+	  *str++ = ch;
+	  *str = '\0';
+	if (ch == EOF)
+		return NULL;
+	else
+	{
+		while (ch != '\n')
+			ch = getchar();
+		return str;
+	}
+}
+/********************************************选择函数*********************************************/
+bool getchoices(char *s, char *c)
+{
+
+	if (strstr(s, c) == NULL)
+		return true;
+	else
+		return false;
+}
